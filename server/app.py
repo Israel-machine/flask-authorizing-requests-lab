@@ -53,17 +53,30 @@ class ShowArticle(Resource):
 
 class Login(Resource):
 
-    def post(self):
-        
-        username = request.get_json().get('username')
-        user = User.query.filter(User.username == username).first()
+    def get(self):
+        user_id = session.get('user_id')
+        if user_id:
+            user = User.query.filter(User.id == user_id).first()
+            if user:
+                return UserSchema().dump(user), 200
 
-        if user:
-        
-            session['user_id'] = user.id
-            return UserSchema().dump(user), 200
+        return {'error': 'Unauthorized. Please log in to continue.'}, 401
+    
 
-        return {}, 401
+    def get(self):
+            # Step 1: Check session to see if user_id exists
+            user_id = session.get('user_id')
+
+            if user_id:
+                # Step 2: User is authorized, find them and return data
+                user = User.query.filter(User.id == user_id).first()
+                if user:
+                    return UserSchema().dump(user), 200
+            
+            # Step 3: User is not authorized, return 401 and error message
+            return {'error': 'Unauthorized. Please log in to continue.'}, 401
+
+
 
 class Logout(Resource):
 
